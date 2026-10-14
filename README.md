@@ -165,3 +165,4 @@ pretending they don't exist:
 Hebrail, G. & Berard, A. (2012). Individual Household Electric Power
 Consumption [Dataset]. UCI Machine Learning Repository.
 https://doi.org/10.24432/C58K54
+# Electricity-Consumption-Forecasting-main-RNN-
