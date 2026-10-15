@@ -92,6 +92,31 @@ def is_lfs_pointer(path: str) -> bool:
         return False
 
 
+UCI_DATA_URL = (
+    "https://archive.ics.uci.edu/static/public/235/"
+    "individual+household+electric+power+consumption.zip"
+)
+
+
+@st.cache_resource(show_spinner="Downloading the dataset (one-time, ~20 MB zip)...")
+def ensure_dataset() -> bool:
+    """Download the real UCI dataset if the repo copy is missing or an LFS pointer."""
+    if os.path.exists(DEFAULT_DATA_PATH) and not is_lfs_pointer(DEFAULT_DATA_PATH):
+        return True
+    try:
+        import io
+        import urllib.request
+        import zipfile
+
+        data = urllib.request.urlopen(UCI_DATA_URL, timeout=300).read()
+        os.makedirs(os.path.dirname(DEFAULT_DATA_PATH), exist_ok=True)
+        with zipfile.ZipFile(io.BytesIO(data)) as z:
+            z.extractall(os.path.dirname(DEFAULT_DATA_PATH))
+        return os.path.exists(DEFAULT_DATA_PATH) and not is_lfs_pointer(DEFAULT_DATA_PATH)
+    except Exception:
+        return False
+
+
 # ----------------------------------------------------------------------
 # Model definition — must match lstm_model.ipynb exactly to load weights
 # ----------------------------------------------------------------------
@@ -299,7 +324,7 @@ elif status == "lfs":
 # --- Sidebar: data source + horizon ---
 st.sidebar.header("Settings")
 
-bundled_ok = os.path.exists(DEFAULT_DATA_PATH) and not is_lfs_pointer(DEFAULT_DATA_PATH)
+bundled_ok = ensure_dataset()
 
 if bundled_ok:
     data_source = st.sidebar.radio(
