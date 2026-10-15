@@ -1,9 +1,8 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+streamlit
 pandas
 numpy
-scikit-learn
-torch
-joblib
-matplotlib
-seaborn
-streamlit
 plotly
+joblib
+scikit-learn==1.8.0
+torch

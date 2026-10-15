@@ -194,12 +194,25 @@ def load_artifacts():
 
 @st.cache_data(show_spinner="Loading dataset (this can take a moment)...")
 def load_default_data():
-    df = pd.read_csv(
+    # Read in chunks with float32 numerics to keep peak memory low
+    # (important on small cloud instances).
+    dtypes = {c: "float32" for c in NUMERIC_COLS}
+    chunks = []
+    for chunk in pd.read_csv(
         DEFAULT_DATA_PATH,
         sep=";",
         na_values="?",
-        low_memory=False,
-    )
+        dtype=dtypes,
+        chunksize=200_000,
+    ):
+        chunk["Datetime"] = pd.to_datetime(
+            chunk["Date"] + " " + chunk["Time"],
+            format="%d/%m/%Y %H:%M:%S",
+            errors="coerce",
+        )
+        chunks.append(chunk.drop(columns=["Date", "Time"]))
+    df = pd.concat(chunks, ignore_index=True)
+    del chunks
     return preprocess_raw(df)
 
 
